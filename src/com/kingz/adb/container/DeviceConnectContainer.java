@@ -1,0 +1,313 @@
+package com.kingz.adb.container;
+
+import com.kingz.adb.action.ActionType;
+import com.kingz.adb.adb.AdbRunnner;
+import com.kingz.adb.config.ConfigManager;
+import com.kingz.adb.inter_face.IActionListenner;
+import javafx.util.Pair;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * author: King.Z <br>
+ * date:  2017/11/27 17:27 <br>
+ * description: 设备连接区域 <br>
+ * <p/>
+ * Container(contentPane) ---> add(JPanel ) --->JPanel.add（Conponet）
+ * <p/>
+ * [JTextField]
+ * setHorizontalAlignment(JTextField.CENTER);
+ * setFont(new Font("谐体",Font.BOLD|Font.ITALIC,16));
+ * setEnabled(false);
+ * <p/>
+ * [JTextArea]
+ * setText("JTextArea1");// setText()设置文本显示的内容
+ * append("JTextArea2");// append()方法会将给定文本追加到文档结尾。
+ * setLineWrap(true);// 设置文本区的换行策略。
+ * setFont(new Font("标楷体", Font.BOLD, 16));  //设置当前字体。
+ * setTabSize(2);//使用setTabSize()方法设置[Tab]键的跳离距离
+ */
+public class DeviceConnectContainer extends Container implements IActionListenner {
+    private DeviceChecker mDeviceChecker;
+    private JLabel mDeviceIp;
+    private JLabel mStateInfo;
+    private JMainFrame _mainFrame;
+    private JComboBox<String> ipComboBox;
+    private JTextField ipAddLabel;
+    private JButton addIpBtn;
+    public static String ip = "";
+    public static List<Pair<String, Icon>> deviceState = new ArrayList<>();
+    private static List<String> ipList = new ArrayList<>();
+    private static Map<String, JButton> actionMap = new HashMap<>();
+    public static final String IP_CONFIG_FILE = "\\ip.txt";
+
+    static {
+        deviceState.add(new Pair<String, Icon>("已连接", new ImageIcon(JMainFrame.resLocalPath.concat("/link.png"))));
+        deviceState.add(new Pair<String, Icon>("未连接", new ImageIcon(JMainFrame.resLocalPath.concat("/Unlink.png"))));
+    }
+
+    public DeviceConnectContainer(JMainFrame mainFrame) {
+        //Dimension dimension = new Dimension(400, 100);
+        //setPreferredSize(dimension);
+        _mainFrame = mainFrame;
+        FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
+        flowLayout.setVgap(10);
+        setLayout(flowLayout);
+
+        if(ConfigManager.getConfigData(ipList, IP_CONFIG_FILE)){
+            if(ipList.size() != 0){
+                ip = ipList.get(0);
+                System.out.println("初始化IP数据----成功 有数据");
+            }else{
+                System.out.println("初始化IP数据---无数据或失败");
+            }
+        }
+
+        mDeviceIp = new JLabel("请选择设备IP:");
+        mDeviceIp.setFont(new Font("楷体", Font.BOLD, 16));
+        add(mDeviceIp);
+
+        ipComboBox = new JComboBox<>();
+        if(ipList.size() != 0){
+            for (String ip : ipList) {
+                ipComboBox.addItem(ip);
+            }
+            ipComboBox.setSelectedIndex(0);
+        }
+        ipComboBox.addItemListener(new IPChangeAction());
+        add(ipComboBox);
+
+        attachBtn("连接", ActionType.CONNECT.value());
+        attachBtn("断开", ActionType.DISCONNECT.value());
+
+        mStateInfo = new JLabel("未连接", new ImageIcon(JMainFrame.resLocalPath.concat("/Unlink.png")), SwingConstants.CENTER);
+        mStateInfo.setSize(200, 30);
+        mStateInfo.setFont(new Font("楷体", Font.BOLD, 12));
+        add(mStateInfo);
+
+        ipAddLabel = new JTextField("",12);
+        ipAddLabel.setHorizontalAlignment(10);
+        ipAddLabel.setFont(new Font("Helvetica", Font.PLAIN,16));
+        add(ipAddLabel);
+
+        addIpBtn = new JButton("添加");
+        addIpBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String addIp = ipAddLabel.getText();
+                if("".equals(addIp) || !isIpMatches(addIp)){
+                    printflnLog("无效参数");
+                    return;
+                }
+                if (!ipList.contains(addIp)) {
+                    if (ConfigManager.setConfigData(IP_CONFIG_FILE,addIp,true)) {
+                        if (ConfigManager.getConfigData(ipList, IP_CONFIG_FILE)) {
+                            if (ipList.size() != 0) {
+                                ip = ipList.get(0);
+                            }
+                            sycnIpBox();
+                        }
+                        printflnLog("添加成功");
+                    }else{
+                        printflnLog("添加失败，请先检查config\\ip.txt文件是否存在");
+                    }
+                }else{
+                    printflnLog("已存在，无需重复添加");
+                }
+            }
+        });
+        add(addIpBtn);
+
+        mDeviceChecker = new DeviceChecker();
+    }
+
+    private void attachBtn(String name, String cmd) {
+        JButton btn = new JButton(name);
+        btn.setActionCommand(cmd);
+        btn.addActionListener(new ConnectListenner());
+        add(btn);
+        if (cmd.equals(ActionType.DISCONNECT.value())) {
+            btn.setEnabled(false);
+        }
+        actionMap.put(cmd, btn);
+    }
+
+
+    @Override
+    public void onStart(ActionType actionType) {
+        _mainFrame.infoComponent.clear();
+        if (actionMap != null && actionMap.size() != 0) {
+            if (actionType != ActionType.DEVICES) {
+                printflnLog(actionType.value() + "......     ");
+            }
+        }
+    }
+
+    @Override
+    public void onSuccess(ActionType actionType, String info) {
+        if (actionType == null) {
+            throw new IllegalArgumentException("actionType can't be null");
+        }
+        System.out.println("onSuccess  type=" + actionType.value() + ";info=" + info);
+        if (actionType != ActionType.DEVICES) {
+            printflnLog(info);
+            if (actionType == ActionType.CONNECT) {
+                _mainFrame.connectContainer.setDisConnectEnable(true);
+                mDeviceChecker.update();
+            } else if (actionType == ActionType.DISCONNECT) {
+                _mainFrame.connectContainer.setConnectEnable(true);
+                mDeviceChecker.update();
+            }
+        } else {
+            if (info.contains(ip)) {
+                setConnectStateEnable(true);
+            } else {
+                setConnectStateEnable(false);
+            }
+        }
+    }
+
+    @Override
+    public void onError(ActionType actionType, String info) {
+        if(!"List of devices attached".equals(info)){
+            printflnLog(info);
+        }
+        if (actionType == ActionType.CONNECT) {
+            setConnectEnable(true);
+        } else if (actionType == ActionType.DISCONNECT) {
+            setDisConnectEnable(true);
+        } else if (actionType == ActionType.DEVICES) {
+            setConnectStateEnable(false);
+        }
+    }
+
+    class IPChangeAction implements ItemListener {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            System.out.println("on ipItem clicked. ");
+            ip = e.getItem().toString();
+            mDeviceChecker.update();
+        }
+    }
+
+    class ConnectListenner implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String actionCommand = e.getActionCommand();
+            ActionType actionType = ActionType.fromString(actionCommand);
+            String ip = DeviceConnectContainer.ip;
+            System.out.println("actionPerformed is:" + actionCommand + "; ip =" + DeviceConnectContainer.ip);
+            if (isIpMatches(ip)) {
+                if (actionType == ActionType.CONNECT) {
+                    doAction("adb connect " + ip, actionType);
+                } else if (actionType == ActionType.DISCONNECT) {
+                    doAction("adb disconnect " + ip, actionType);
+                }
+            } else {
+                onError(ActionType.CONNECT, "IP地址错误！");
+            }
+
+        }
+    }
+
+    public void setConnectEnable(boolean isEnable) {
+        actionMap.get(ActionType.CONNECT.value()).setEnabled(isEnable);
+    }
+
+    public void setDisConnectEnable(boolean isEnable) {
+        actionMap.get(ActionType.DISCONNECT.value()).setEnabled(isEnable);
+    }
+
+    public boolean isCurrentDeviceConnected(){
+        return !actionMap.get(ActionType.CONNECT.value()).isEnabled();
+    }
+
+    private static Map<String, String> errorInfoMap = new HashMap();
+
+    static {
+        errorInfoMap.put("error", "error");
+        errorInfoMap.put("unable", "unable");
+        errorInfoMap.put(" Failure", "Failure");
+        errorInfoMap.put("cannot connect", "cannot connect");
+    }
+
+
+    private void doAction(final String cmd, final ActionType actionType) {
+        if (actionType != ActionType.DEVICES) {
+            onStart(actionType);
+        }
+        if (cmd == null || "".equals(cmd)) {
+            onError(ActionType.EMPTY, "功能未实现,敬请期待!");
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String result = AdbRunnner.start(cmd);
+                if (JMainFrame.ERROR_KEYS.contains(result) || "List of devices attached".equals(result)) {
+                    onError(actionType, result);
+                } else {
+                    onSuccess(actionType, result);
+                }
+            }
+        }).start();
+    }
+
+    private void printflnLog(String value) {
+        _mainFrame.infoComponent.appenText(value + "\r\n");
+    }
+
+    private void setConnectStateEnable(boolean enable) {
+        if (enable) {
+            actionMap.get(ActionType.CONNECT.value()).setEnabled(false);
+            actionMap.get(ActionType.DISCONNECT.value()).setEnabled(true);
+            mStateInfo.setText(deviceState.get(0).getKey());
+            mStateInfo.setIcon(deviceState.get(0).getValue());
+        } else {
+            actionMap.get(ActionType.CONNECT.value()).setEnabled(true);
+            actionMap.get(ActionType.DISCONNECT.value()).setEnabled(false);
+            mStateInfo.setText(deviceState.get(1).getKey());
+            mStateInfo.setIcon(deviceState.get(1).getValue());
+        }
+    }
+
+
+    private class DeviceChecker {
+        public DeviceChecker() {
+            update();
+        }
+
+        public void update() {
+            System.out.println("update connect state.");
+            doAction("adb devices", ActionType.DEVICES);
+        }
+    }
+
+    private boolean isIpMatches(String ip){
+        Pattern pattern = Pattern.compile("^((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)((:?)([0-9]{1,5})?)$");
+        Matcher matcher = pattern.matcher(ip);
+        return matcher.matches();
+    }
+
+    private void sycnIpBox(){
+        if(ipList.size() != 0){
+            ipComboBox.removeAllItems();
+            for (String ip : ipList) {
+                ipComboBox.addItem(ip);
+            }
+            ipComboBox.setSelectedIndex(0);
+        }
+    }
+}
