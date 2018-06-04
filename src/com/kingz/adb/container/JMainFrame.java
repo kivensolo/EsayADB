@@ -26,7 +26,6 @@ import java.io.IOException;
 public class JMainFrame extends JFrame {
 
     public static final String TITLE = "Easy ADB(v 1.0)     Edit by ZekeWong ";
-    public static String ERROR_KEYS = "error,unable,Failure,cannot connect,Failed";
 
     DeviceConnectContainer connectContainer;
     DetailInfoContainer infoComponent;
@@ -67,7 +66,7 @@ public class JMainFrame extends JFrame {
             rootPath = directory.getCanonicalPath();
             resLocalPath = rootPath +"\\res";
             cfgLocalPath = rootPath +"\\config";
-            System.out.println("rootPath = " + rootPath + "  ;resLocalPath="+resLocalPath + "  ;cfgLocalPath = " + cfgLocalPath);
+            //System.out.println("rootPath = " + rootPath + "  ;resLocalPath="+resLocalPath + "  ;config LocalPath = " + cfgLocalPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
