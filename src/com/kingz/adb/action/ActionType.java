@@ -18,6 +18,7 @@ public enum ActionType {
     DEVICES("show devices"),
     SHOW_HEAP("showHeap"),
     SHOW_PROC_RANK("showProcRank"),
+    DUMP_HEAP("dempHeap"),
     CATCH_SCREEN("敬请期待更多功能"),
     INPUT_TEXT("inputText"),
     START_APP("startApp");

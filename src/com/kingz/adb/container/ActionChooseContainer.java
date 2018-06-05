@@ -57,6 +57,8 @@ public class ActionChooseContainer extends Container implements IActionListenner
         cmdMap.put(ActionType.FORCE_STOP, "adb shell am force-stop ");
         cmdMap.put(ActionType.START_APP, "adb shell am start ");
         cmdMap.put(ActionType.INPUT_TEXT, "adb shell input text ");
+        //dump the heap of a process
+        cmdMap.put(ActionType.DUMP_HEAP, "adb shell am dumpheap ");  //cmd： adb shell am dumpheap [PROCESS] [FILENAME]
     }
 
     public ActionChooseContainer(JFrame jFrame) {
@@ -234,6 +236,8 @@ public class ActionChooseContainer extends Container implements IActionListenner
                     ConfigManager.setConfigData(SPLASH_CONFIG_FILE,pageId,false);
                 }
                 doAction(cmdMap.get(actionType) + appPkgname +"/" + pageId, actionType);
+            }else if(actionType == ActionType.DUMP_HEAP){
+                doAction(cmdMap.get(actionType) + appPkgname + "/data/anr/" + "33.hprof" , actionType);
             }
         }
     }
@@ -249,7 +253,7 @@ public class ActionChooseContainer extends Container implements IActionListenner
         @Override
         public void actionPerformed(ActionEvent e) {
             String addPkg = appenPkg.getText();
-            if ("".equals(addPkg)) {
+            if ("".equals(addPkg.trim())) {
                 printflnLog("请先输入包名");
                 return;
             }
