@@ -3,6 +3,8 @@ package com.kingz.adb.container;
 import com.kingz.adb.action.ActionType;
 import com.kingz.adb.adb.AdbRunnner;
 import com.kingz.adb.config.ConfigManager;
+import com.kingz.adb.dm.IpModel;
+import com.kingz.adb.dm.ResponseFilter;
 import com.kingz.adb.inter_face.IActionListenner;
 import javafx.util.Pair;
 
@@ -12,10 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,11 +46,14 @@ public class DeviceConnectContainer extends Container implements IActionListenne
     private JComboBox<String> ipComboBox;
     private JTextField ipAddLabel;
     private JButton addIpBtn;
-    public static String ip = "";
-    public static List<Pair<String, Icon>> deviceState = new ArrayList<>();
-    private static List<String> ipList = new ArrayList<>();
+    private static List<Pair<String, Icon>> deviceState = new ArrayList<>();
     private static Map<String, JButton> actionMap = new HashMap<>();
-    public static final String IP_CONFIG_FILE = "\\ip.txt";
+
+    //--------- Ip 数据 ---------/
+    private static List<IpModel> ipList = new ArrayList<>();
+    private static String selectedIp = "";
+    private static final String IP_CONFIG_FILE = "\\ip.txt";
+    //--------- Ip 数据 ---------/
 
     static {
         deviceState.add(new Pair<String, Icon>("已连接", new ImageIcon(JMainFrame.resLocalPath.concat("/link.png"))));
@@ -65,9 +68,9 @@ public class DeviceConnectContainer extends Container implements IActionListenne
         flowLayout.setVgap(10);
         setLayout(flowLayout);
 
-        if(ConfigManager.getConfigData(ipList, IP_CONFIG_FILE)){
+        if(ConfigManager.getIpConfigData(ipList, IP_CONFIG_FILE)){
             if(ipList.size() != 0){
-                ip = ipList.get(0);
+                selectedIp = ipList.get(0).getIp();
                 System.out.println("初始化IP数据----成功 有数据");
             }else{
                 System.out.println("初始化IP数据---无数据或失败");
@@ -80,8 +83,8 @@ public class DeviceConnectContainer extends Container implements IActionListenne
 
         ipComboBox = new JComboBox<>();
         if(ipList.size() != 0){
-            for (String ip : ipList) {
-                ipComboBox.addItem(ip);
+            for (IpModel ip : ipList) {
+                ipComboBox.addItem(ip.getIp());
             }
             ipComboBox.setSelectedIndex(0);
         }
@@ -110,11 +113,19 @@ public class DeviceConnectContainer extends Container implements IActionListenne
                     printflnLog("无效参数");
                     return;
                 }
-                if (!ipList.contains(addIp)) {
-                    if (ConfigManager.setConfigData(IP_CONFIG_FILE,addIp,true)) {
-                        if (ConfigManager.getConfigData(ipList, IP_CONFIG_FILE)) {
+                IpModel ipModel = new IpModel(addIp);
+                boolean ipIsexited = false;
+                for(IpModel ip:ipList){
+                    if(ip.getIp().equals(addIp)){
+                        ipIsexited = true;
+                        break;
+                    }
+                }
+                if (!ipIsexited) {
+                    if (ConfigManager.setIpConfigData(IP_CONFIG_FILE,ipModel,true)) {
+                        if (ConfigManager.getIpConfigData(ipList, IP_CONFIG_FILE)) {
                             if (ipList.size() != 0) {
-                                ip = ipList.get(0);
+                                selectedIp = ipList.get(0).getIp();
                             }
                             sycnIpBox();
                         }
@@ -159,18 +170,19 @@ public class DeviceConnectContainer extends Container implements IActionListenne
         if (actionType == null) {
             throw new IllegalArgumentException("actionType can't be null");
         }
-        System.out.println("onSuccess  type=" + actionType.value() + ";info=" + info);
+        System.out.println("onSuccess  type:" + actionType.value() + "    info:" + info);
         if (actionType != ActionType.DEVICES) {
             printflnLog(info);
             if (actionType == ActionType.CONNECT) {
                 _mainFrame.connectContainer.setDisConnectEnable(true);
                 mDeviceChecker.update();
+                updateIpConfig();
             } else if (actionType == ActionType.DISCONNECT) {
                 _mainFrame.connectContainer.setConnectEnable(true);
                 mDeviceChecker.update();
             }
         } else {
-            if (info.contains(ip)) {
+            if (info.contains(selectedIp)) {
                 setConnectStateEnable(true);
             } else {
                 setConnectStateEnable(false);
@@ -196,7 +208,7 @@ public class DeviceConnectContainer extends Container implements IActionListenne
         @Override
         public void itemStateChanged(ItemEvent e) {
             System.out.println("on ipItem clicked. ");
-            ip = e.getItem().toString();
+            selectedIp = e.getItem().toString();
             mDeviceChecker.update();
         }
     }
@@ -207,8 +219,8 @@ public class DeviceConnectContainer extends Container implements IActionListenne
         public void actionPerformed(ActionEvent e) {
             String actionCommand = e.getActionCommand();
             ActionType actionType = ActionType.fromString(actionCommand);
-            String ip = DeviceConnectContainer.ip;
-            System.out.println("actionPerformed is:" + actionCommand + "; ip =" + DeviceConnectContainer.ip);
+            String ip = selectedIp;
+            System.out.println("ActionPerformed is:[" + actionCommand + "]  ip:[" + selectedIp+"]");
             if (isIpMatches(ip)) {
                 if (actionType == ActionType.CONNECT) {
                     doAction("adb connect " + ip, actionType);
@@ -256,11 +268,14 @@ public class DeviceConnectContainer extends Container implements IActionListenne
             @Override
             public void run() {
                 String result = AdbRunnner.start(cmd);
-                if (JMainFrame.ERROR_KEYS.contains(result) || "List of devices attached".equals(result)) {
-                    onError(actionType, result);
-                } else {
-                    onSuccess(actionType, result);
+                Set<Map.Entry<String, String>> entries = ResponseFilter.ERROR_KEYS.entrySet();
+                for (Map.Entry<String, String> value:entries){
+                    if(result.contains(value.getKey()) || "List of devices attached".equals(result)){
+                        onError(actionType, result);
+                        return;
+                    }
                 }
+                onSuccess(actionType, result);
             }
         }).start();
     }
@@ -304,10 +319,20 @@ public class DeviceConnectContainer extends Container implements IActionListenne
     private void sycnIpBox(){
         if(ipList.size() != 0){
             ipComboBox.removeAllItems();
-            for (String ip : ipList) {
-                ipComboBox.addItem(ip);
+            for (IpModel ip : ipList) {
+                ipComboBox.addItem(ip.getIp());
             }
             ipComboBox.setSelectedIndex(0);
+        }
+    }
+
+    private void updateIpConfig() {
+        for (IpModel ip : ipList) {
+            if (ip.getIp().equals(selectedIp)) {
+                ip.useTimesAdd();
+                ConfigManager.updateIpConfigData(IP_CONFIG_FILE,ip);
+                break;
+            }
         }
     }
 }

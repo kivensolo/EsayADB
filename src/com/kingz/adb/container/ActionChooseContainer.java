@@ -13,6 +13,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,8 +40,8 @@ public class ActionChooseContainer extends Container implements IActionListenner
     public static final String PKG_CONFIG_FILE = "\\packages.txt";
     public static final String SPLASH_CONFIG_FILE = "\\startPage.txt";
 
-    private static java.util.List<String> pkgList = new ArrayList<>();
-    private static java.util.List<String> splashPageList = new ArrayList<>();
+    private static List<String> pkgList = new ArrayList<>();
+    private static List<String> splashPageList = new ArrayList<>();
     private static Map<ActionType, String> cmdMap = new HashMap<>();
     private static Map<String, JButton> actionMap = new HashMap<>();
 
@@ -75,7 +76,7 @@ public class ActionChooseContainer extends Container implements IActionListenner
         if(ConfigManager.getConfigData(pkgList,PKG_CONFIG_FILE)){
             if(pkgList.size() != 0){
                 appPkgname = pkgList.get(0);
-                System.out.println("初始化包数据----成功 有数据");
+                //System.out.println("初始化包数据----成功 有数据");
             }else{
                 System.out.println("初始化包数据---无数据或失败");
             }
@@ -86,7 +87,7 @@ public class ActionChooseContainer extends Container implements IActionListenner
                 String s = splashPageList.get(0);
                 if(s != null && !s.isEmpty() && !s.equals("")){
                     splashPage = splashPageList.get(0);
-                    System.out.println("初始化Splash数据----成功");
+                    //System.out.println("初始化Splash数据----成功");
                 }
             }else{
                 System.out.println("初始化Splash数据----无数据或失败");
