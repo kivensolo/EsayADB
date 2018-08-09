@@ -1,4 +1,4 @@
 # EsayADB
-A adb tool by JSwing
+A adb tool with JSwing
 
 Double click /ExecutorZip/EsayADB.bat to run.
