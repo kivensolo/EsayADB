@@ -1,4 +1,4 @@
-package com.kingz.adb.container;
+package com.easyadb.gui.container;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

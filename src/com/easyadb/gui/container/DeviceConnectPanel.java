@@ -1,12 +1,12 @@
-package com.kingz.adb.container;
+package com.easyadb.gui.container;
 
-import com.kingz.adb.action.ActionType;
-import com.kingz.adb.adb.AdbRunnner;
-import com.kingz.adb.config.ConfigManager;
-import com.kingz.adb.dm.IpModel;
-import com.kingz.adb.dm.ResponseFilter;
-import com.kingz.adb.inter_face.IActionListenner;
-import com.kingz.adb.widget.ComponentsUtils;
+import com.easyadb.adb.action.ActionType;
+import com.easyadb.adb.adb.AdbRunnner;
+import com.easyadb.adb.config.ConfigManager;
+import com.easyadb.adb.dm.IpModel;
+import com.easyadb.adb.dm.ResponseFilter;
+import com.easyadb.adb.inter_face.IActionListenner;
+import com.easyadb.gui.widget.ComponentsUtils;
 import javafx.util.Pair;
 
 import javax.swing.*;
@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 public class DeviceConnectPanel extends JPanel implements IActionListenner {
     private DeviceChecker mDeviceChecker;
     private JLabel mStateInfo;
-    private JMainFrame _mainFrame;
+    private MainViewerGUI _mainFrame;
     private JComboBox<String> ipComboBox;
     private JTextField ipAddLabel;
     private JButton addIpBtn;
@@ -57,11 +57,11 @@ public class DeviceConnectPanel extends JPanel implements IActionListenner {
     //--------- Ip 数据 ---------/
 
     static {
-        deviceState.add(new Pair<String, Icon>("已连接", new ImageIcon(JMainFrame.resLocalPath.concat("/link.png"))));
-        deviceState.add(new Pair<String, Icon>("未连接", new ImageIcon(JMainFrame.resLocalPath.concat("/Unlink.png"))));
+        deviceState.add(new Pair<String, Icon>("已连接", new ImageIcon(MainViewerGUI.resLocalPath.concat("/link.png"))));
+        deviceState.add(new Pair<String, Icon>("未连接", new ImageIcon(MainViewerGUI.resLocalPath.concat("/Unlink.png"))));
     }
 
-    public DeviceConnectPanel(JMainFrame mainFrame) {
+    public DeviceConnectPanel(MainViewerGUI mainFrame) {
         //Dimension dimension = new Dimension(400, 100);
         //setPreferredSize(dimension);
         _mainFrame = mainFrame;
@@ -93,7 +93,7 @@ public class DeviceConnectPanel extends JPanel implements IActionListenner {
         attachBtn("连接", ActionType.CONNECT.value());
         attachBtn("断开", ActionType.DISCONNECT.value());
 
-        mStateInfo = new JLabel("未连接", new ImageIcon(JMainFrame.resLocalPath.concat("/Unlink.png")), SwingConstants.CENTER);
+        mStateInfo = new JLabel("未连接", new ImageIcon(MainViewerGUI.resLocalPath.concat("/Unlink.png")), SwingConstants.CENTER);
         mStateInfo.setSize(200, 30);
         mStateInfo.setFont(font);
         add(mStateInfo);

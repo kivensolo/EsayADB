@@ -1,4 +1,4 @@
-package com.kingz.adb.inter_face;
+package com.easyadb.adb.inter_face;
 
 /**
  * author: King.Z <br>

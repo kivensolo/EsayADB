@@ -1,6 +1,6 @@
-package com.kingz.adb.inter_face;
+package com.easyadb.adb.inter_face;
 
-import com.kingz.adb.action.ActionType;
+import com.easyadb.adb.action.ActionType;
 
 public interface IActionListenner {
     void onStart(ActionType actionType);

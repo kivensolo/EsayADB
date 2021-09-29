@@ -1,4 +1,6 @@
-package com.kingz.adb.container;
+package com.easyadb.gui.container;
+
+import com.easyadb.event.keyboard.AppKeyEventDispatcher;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +25,7 @@ import java.io.IOException;
  * \showInputDialog
  * \showConfirmDialog  0：是 1：否  2：取消
  */
-public class JMainFrame extends JFrame {
+public class MainViewerGUI extends JFrame {
 
     public static final String TITLE = "Easy ADB(v 1.0)     Edit by ZekeWong ";
 
@@ -33,6 +35,11 @@ public class JMainFrame extends JFrame {
     public static String rootPath = "";
     public static String resLocalPath = "";
     public static String cfgLocalPath = "";
+
+    /**
+     * 窗口是否最大化
+     */
+    public boolean isMaximized = false;
 
     private void init() {
         setTitle(TITLE);
@@ -49,7 +56,16 @@ public class JMainFrame extends JFrame {
         setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
     }
 
-    public JMainFrame() {
+    public MainViewerGUI() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new AppKeyEventDispatcher());
+        addWindowStateListener(new AppWindowStateAdapter());
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+
         //Toolkit kit = Toolkit.getDefaultToolkit();
         initPath();
         initIconView();
@@ -62,13 +78,15 @@ public class JMainFrame extends JFrame {
         //add("East", new JButton("设备连接列表区域"));
         //add("West", new JButton("West Btn"));
         initMsgView();
-        new Menu(this);
+        //初始化菜单
+        new MenuBar(this);
         //调用框架组件的首选大小，或者我们可以用SetSize方法来替换它
         //pack();
 
         init();
     }
 
+    //TODO 后续分隔符换成系统值
     private void initPath(){
         File directory = new File(".");
         try {
@@ -105,7 +123,7 @@ public class JMainFrame extends JFrame {
 
 
     private void initIconView() {
-        Image img = new ImageIcon(JMainFrame.resLocalPath.concat("/icon.png")).getImage();
+        Image img = new ImageIcon(MainViewerGUI.resLocalPath.concat("/icon.png")).getImage();
         setIconImage(img);
     }
 
@@ -131,5 +149,24 @@ public class JMainFrame extends JFrame {
     }
 
 
+    public class AppWindowStateAdapter extends WindowAdapter {
+        @Override
+        public void windowStateChanged(WindowEvent evt) {
+            int oldState = evt.getOldState();
+            int newState = evt.getNewState();
+
+            if ((oldState & Frame.ICONIFIED) == 0 && (newState & Frame.ICONIFIED) != 0) {
+                //System.out.println("Frame was iconized");
+            } else if ((oldState & Frame.ICONIFIED) != 0 && (newState & Frame.ICONIFIED) == 0) {
+                //System.out.println("Frame was deiconized");
+            }
+
+            if ((oldState & Frame.MAXIMIZED_BOTH) == 0 && (newState & Frame.MAXIMIZED_BOTH) != 0) {
+                isMaximized = true;
+            } else if ((oldState & Frame.MAXIMIZED_BOTH) != 0 && (newState & Frame.MAXIMIZED_BOTH) == 0) {
+                isMaximized = false;
+            }
+        }
+    }
 
 }

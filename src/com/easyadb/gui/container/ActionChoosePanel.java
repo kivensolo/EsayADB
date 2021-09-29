@@ -1,10 +1,10 @@
-package com.kingz.adb.container;
+package com.easyadb.gui.container;
 
-import com.kingz.adb.action.ActionType;
-import com.kingz.adb.adb.AdbRunnner;
-import com.kingz.adb.config.ConfigManager;
-import com.kingz.adb.inter_face.IActionListenner;
-import com.kingz.adb.widget.ComponentsUtils;
+import com.easyadb.adb.action.ActionType;
+import com.easyadb.adb.adb.AdbRunnner;
+import com.easyadb.adb.config.ConfigManager;
+import com.easyadb.adb.inter_face.IActionListenner;
+import com.easyadb.gui.widget.ComponentsUtils;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -44,7 +44,7 @@ public class ActionChoosePanel extends JPanel implements IActionListenner {
     private JTextField targetActivityFieldView;
     private static String appPkgname = "";
     private String splashPage = "";
-    private JMainFrame _mainFrame;
+    private MainViewerGUI _mainFrame;
     private JComboBox<String> pkgComboBox;
     public static final String PKG_CONFIG_FILE = "\\packages.txt";
     public static final String SPLASH_CONFIG_FILE = "\\startPage.txt";
@@ -80,7 +80,7 @@ public class ActionChoosePanel extends JPanel implements IActionListenner {
         titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
         setBorder(titledBorder);
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-        _mainFrame = (JMainFrame) jFrame;
+        _mainFrame = (MainViewerGUI) jFrame;
         //setBackground(Color.LIGHT_GRAY);
         initConfigData();
         initActionTopArea();
@@ -330,7 +330,7 @@ public class ActionChoosePanel extends JPanel implements IActionListenner {
             public void run() {
                 String result = AdbRunnner.start(cmd);
                 onSuccess(actionType, result);
-                //if (JMainFrame.ERROR_KEYS.contains(result) && !"".equals(result)) {
+                //if (MainViewerGUI.ERROR_KEYS.contains(result) && !"".equals(result)) {
                 //    onError(actionType,result);
                 //} else {
                 //    onSuccess(actionType, result);

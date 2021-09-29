@@ -1,4 +1,4 @@
-package com.kingz.adb.dm;
+package com.easyadb.adb.dm;
 
 public class IpModel implements Comparable<IpModel>{
     private String ip = "999:999:999:0";

@@ -1,4 +1,4 @@
-package com.kingz.adb.adb;
+package com.easyadb.adb.adb;
 
 import java.io.*;
 

@@ -1,4 +1,4 @@
-package com.kingz.adb.widget;
+package com.easyadb.gui.widget;
 
 import javax.swing.*;
 

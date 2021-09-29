@@ -1,4 +1,4 @@
-package com.kingz.adb.layout;
+package com.easyadb.gui.layout;
 
 import java.awt.*;
 

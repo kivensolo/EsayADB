@@ -1,6 +1,6 @@
-package com.kingz.adb.layout;
+package com.easyadb.gui.layout;
 
-import com.kingz.adb.container.JMainFrame;
+import com.easyadb.gui.container.MainViewerGUI;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,10 +20,10 @@ public class WindowActivity {
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    new MainViewerGUI();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                new JMainFrame();
             }
         });
 

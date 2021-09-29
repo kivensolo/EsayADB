@@ -1,4 +1,4 @@
-package com.kingz.adb.dm;
+package com.easyadb.adb.dm;
 
 import java.util.HashMap;
 

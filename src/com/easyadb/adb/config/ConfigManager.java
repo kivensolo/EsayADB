@@ -1,7 +1,7 @@
-package com.kingz.adb.config;
+package com.easyadb.adb.config;
 
-import com.kingz.adb.container.JMainFrame;
-import com.kingz.adb.dm.IpModel;
+import com.easyadb.gui.container.MainViewerGUI;
+import com.easyadb.adb.dm.IpModel;
 
 import java.io.*;
 import java.util.Collections;
@@ -11,7 +11,7 @@ public class ConfigManager {
      public static final String Eencoding = "UTF-8";
      public static boolean getConfigData(List<String> dataList, String fileName){
          try {
-            File file = new File(JMainFrame.cfgLocalPath.concat(fileName));
+            File file = new File(MainViewerGUI.cfgLocalPath.concat(fileName));
             if (file.isFile() && file.exists()) {
                 InputStreamReader read = new InputStreamReader( new FileInputStream(file), Eencoding);
                 BufferedReader bufferedReader = new BufferedReader(read);
@@ -41,7 +41,7 @@ public class ConfigManager {
      public static boolean getIpConfigData(List<IpModel> dataList, String fileName){
          try {
 
-             File ipData = new File(JMainFrame.cfgLocalPath.concat(fileName));
+             File ipData = new File(MainViewerGUI.cfgLocalPath.concat(fileName));
              if (ipData.isFile() && ipData.exists()) {
                 InputStreamReader read = new InputStreamReader(new FileInputStream(ipData), Eencoding);
                 BufferedReader bufferedReader = new BufferedReader(read);
@@ -82,7 +82,7 @@ public class ConfigManager {
 
       public static boolean setConfigData(String fileName, String data, boolean isAppend){
         try {
-            File file = new File(JMainFrame.cfgLocalPath.concat(fileName));
+            File file = new File(MainViewerGUI.cfgLocalPath.concat(fileName));
             if (file.isFile() && file.exists()) {
                 OutputStreamWriter writer = new OutputStreamWriter( new FileOutputStream(file,isAppend), Eencoding);
                 BufferedWriter bufferedWriter = new BufferedWriter(writer);
@@ -101,7 +101,7 @@ public class ConfigManager {
 
       public static boolean setIpConfigData(String fileName, IpModel ipModel, boolean isAppend){
         try {
-            File file = new File(JMainFrame.cfgLocalPath.concat(fileName));
+            File file = new File(MainViewerGUI.cfgLocalPath.concat(fileName));
             if (file.isFile() && file.exists()) {
                 OutputStreamWriter writer = new OutputStreamWriter( new FileOutputStream(file,isAppend), Eencoding);
                 BufferedWriter bufferedWriter = new BufferedWriter(writer);
@@ -123,8 +123,8 @@ public class ConfigManager {
      */
       public static boolean updateIpConfigData(String fileName, IpModel ipModel){
         try {
-            File file = new File(JMainFrame.cfgLocalPath.concat(fileName));
-            File fileBkg = new File(JMainFrame.cfgLocalPath.concat(fileName).concat("bkg"));
+            File file = new File(MainViewerGUI.cfgLocalPath.concat(fileName));
+            File fileBkg = new File(MainViewerGUI.cfgLocalPath.concat(fileName).concat("bkg"));
             fileBkg.createNewFile();
             if (file.isFile() && file.exists()) {
                 InputStreamReader read = new InputStreamReader(new FileInputStream(file), Eencoding);
