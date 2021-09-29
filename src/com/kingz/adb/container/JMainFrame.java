@@ -27,19 +27,26 @@ public class JMainFrame extends JFrame {
 
     public static final String TITLE = "Easy ADB(v 1.0)     Edit by ZekeWong ";
 
-    DeviceConnectContainer connectContainer;
+    DeviceConnectPanel connectPanel;
     DetailInfoContainer infoComponent;
-    ActionChooseContainer actionChooseContainer;
+    ActionChoosePanel actionChooseContainer;
     public static String rootPath = "";
     public static String resLocalPath = "";
     public static String cfgLocalPath = "";
 
-    public void init() {
+    private void init() {
         setTitle(TITLE);
         //setExtendedState(Frame.MAXIMIZED_BOTH);// 将窗口最大化
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(700, 490);
+        setSize(950, 600);
         setVisible(true);
+        setShowCenter();
+    }
+
+    private void setShowCenter() {
+        Dimension frameSize = getSize();
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
     }
 
     public JMainFrame() {
@@ -58,6 +65,8 @@ public class JMainFrame extends JFrame {
         new Menu(this);
         //调用框架组件的首选大小，或者我们可以用SetSize方法来替换它
         //pack();
+
+        init();
     }
 
     private void initPath(){
@@ -78,8 +87,8 @@ public class JMainFrame extends JFrame {
     }
 
     private void initConnectArea() {
-        connectContainer = new DeviceConnectContainer(this);
-        add("North", connectContainer);
+        connectPanel = new DeviceConnectPanel(this);
+        add("North", connectPanel);
     }
 
     private void initLogArea() {
@@ -90,7 +99,7 @@ public class JMainFrame extends JFrame {
     }
 
     private void initActionChooseArea() {
-        actionChooseContainer = new ActionChooseContainer(this);
+        actionChooseContainer = new ActionChoosePanel(this);
         add("Center", actionChooseContainer);
     }
 

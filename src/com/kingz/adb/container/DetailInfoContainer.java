@@ -1,6 +1,7 @@
 package com.kingz.adb.container;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
@@ -27,12 +28,12 @@ public class DetailInfoContainer extends Container {
         jTextArea = new JTextArea(10, 15);
         jTextArea.setTabSize(4);
         //setFont(new Font("标楷体", Font.PLAIN, 14));
-        jTextArea.setFont(new Font("Helvetica", Font.PLAIN, 14));
+        jTextArea.setFont(new Font("Helvetica", Font.PLAIN, 16));
         jTextArea.setLineWrap(true);        // 激活自动换行功能
         jTextArea.setWrapStyleWord(true);   // 激活断行不断字功能
         jTextArea.setEnabled(false);
-        jTextArea.setDisabledTextColor(Color.YELLOW);
-        jTextArea.setBackground(Color.gray);
+        jTextArea.setDisabledTextColor(Color.LIGHT_GRAY);
+        jTextArea.setBackground(Color.decode("2829099"));
         //jTextArea.addMouseListener(new MouseAdapter() {
         //    public void mouseEntered(MouseEvent mouseEvent) {
         //        jTextArea.setCursor(new Cursor(Cursor.TEXT_CURSOR)); //鼠标进入Text区后变为文本输入指针
@@ -49,6 +50,9 @@ public class DetailInfoContainer extends Container {
         //});
         //jTextArea.setVisible(true); //使Text区的文本光标显示
         JScrollPane jscrollPane = new JScrollPane(jTextArea);
+        TitledBorder titledBorder = BorderFactory.createTitledBorder("Logcat");
+        titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
+        jscrollPane.setBorder(titledBorder);
         add(jscrollPane);
     }
 

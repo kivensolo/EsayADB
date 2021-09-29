@@ -4,8 +4,11 @@ import com.kingz.adb.action.ActionType;
 import com.kingz.adb.adb.AdbRunnner;
 import com.kingz.adb.config.ConfigManager;
 import com.kingz.adb.inter_face.IActionListenner;
+import com.kingz.adb.widget.ComponentsUtils;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,19 +23,25 @@ import java.util.Map;
  * author: King.Z <br>
  * date:  2017/11/29 16:18 <br>
  * description: APK行为选择区域
- * 采用绝对布局
+ *
+ * |-------------------------+
+ * |BoxLayout                         |
+ * |                         |
+ * |                         |
+ * |-------------------------+
  */
-public class ActionChooseContainer extends Container implements IActionListenner {
+public class ActionChoosePanel extends JPanel implements IActionListenner {
     public static final int ACTION_BTN_X = 10;
     public static final int ACTION_BTN_WIDTH = 100;
     public static final int ACTION_BTN_HEIGHT = 30;
     public static final int ACTION_BTN_OFFSET_Y = 80;
     public static final int ACTION_BTN_OFFSET_X = 5;
+    public static final int TEXT_SIZE = 18;
+    Font font = new Font("Helvetica", Font.PLAIN, TEXT_SIZE);
 
-    private JLabel mTitle;
     private JButton addPkgBtn;
     private JTextField appenPkg;
-    private JTextField splashPageId;
+    private JTextField targetActivityFieldView;
     private static String appPkgname = "";
     private String splashPage = "";
     private JMainFrame _mainFrame;
@@ -44,6 +53,9 @@ public class ActionChooseContainer extends Container implements IActionListenner
     private static List<String> splashPageList = new ArrayList<>();
     private static Map<ActionType, String> cmdMap = new HashMap<>();
     private static Map<String, JButton> actionMap = new HashMap<>();
+
+
+    private Component paddingHolder = Box.createHorizontalStrut(5);
 
     //static {
     //    pkgList.add("com.starcor.hunan");
@@ -62,13 +74,16 @@ public class ActionChooseContainer extends Container implements IActionListenner
         cmdMap.put(ActionType.DUMP_HEAP, "adb shell am dumpheap ");  //cmd： adb shell am dumpheap [PROCESS] [FILENAME]
     }
 
-    public ActionChooseContainer(JFrame jFrame) {
-        //FlowLayout flowLayout = new FlowLayout();
-        //flowLayout.setAlignment(FlowLayout.LEFT);
+    public ActionChoosePanel(JFrame jFrame) {
+        TitledBorder titledBorder = BorderFactory.createTitledBorder("操作选项");
+        titledBorder.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
+        setBorder(titledBorder);
+        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         _mainFrame = (JMainFrame) jFrame;
-        setLayout(null);
+        //setBackground(Color.LIGHT_GRAY);
         initConfigData();
-        initPkgChooseArea();
+        initActionTopArea();
         initChooseBtn();
     }
 
@@ -97,48 +112,37 @@ public class ActionChooseContainer extends Container implements IActionListenner
     }
 
     private void initChooseBtn() {
-        attachBtn("Clear", ActionType.CLEAR.value(),
-                new Rectangle(ACTION_BTN_X,
-                        40 + ACTION_BTN_OFFSET_Y,
-                        ACTION_BTN_WIDTH,
-                        ACTION_BTN_HEIGHT));
-        attachBtn("Uninstall", ActionType.UNINSTALL.value(),
-                new Rectangle(ACTION_BTN_X + ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X,
-                        40 + ACTION_BTN_OFFSET_Y,
-                        ACTION_BTN_WIDTH,
-                        ACTION_BTN_HEIGHT));
-        attachBtn("Stop", ActionType.FORCE_STOP.value(),
-                new Rectangle(ACTION_BTN_X + 2 * (ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X),
-                        40 + ACTION_BTN_OFFSET_Y,
-                        ACTION_BTN_WIDTH,
-                        ACTION_BTN_HEIGHT));
-        attachBtn("Comming...", ActionType.CATCH_SCREEN.value(),
-                new Rectangle(ACTION_BTN_X + 3 * (ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X),
-                        40 + ACTION_BTN_OFFSET_Y,
-                        ACTION_BTN_WIDTH,
-                        ACTION_BTN_HEIGHT));
-        attachBtn("Start：", ActionType.START_APP.value(),
-                new Rectangle(ACTION_BTN_X,
-                        ACTION_BTN_OFFSET_Y,
-                        ACTION_BTN_WIDTH,
-                        ACTION_BTN_HEIGHT));
+        JPanel actionsPanel = new JPanel();
+        FlowLayout layout = (FlowLayout) actionsPanel.getLayout();
+        layout.setAlignment(FlowLayout.LEFT);
+        actionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+        attachBtn(actionsPanel,"Clear", ActionType.CLEAR.value());
+        attachBtn(actionsPanel,"Uninstall", ActionType.UNINSTALL.value());
+        attachBtn(actionsPanel,"Stop", ActionType.FORCE_STOP.value());
+        attachBtn(actionsPanel,"Comming...", ActionType.CATCH_SCREEN.value());
+        add(actionsPanel);
 
-        splashPageId = new JTextField();
-        splashPageId.setBounds(new Rectangle(ACTION_BTN_X + ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X,
-                        ACTION_BTN_OFFSET_Y,
-                        265,
-                        ACTION_BTN_HEIGHT));
-        splashPageId.setFont(new Font("Helvetica", Font.PLAIN,14));
-        splashPageId.setText(splashPage);
-        add(splashPageId);
+
     }
 
-    private void initPkgChooseArea() {
-        mTitle = new JLabel("目标APP包名：");
-        mTitle.setFont(new Font("楷体", Font.BOLD, 16));
-        mTitle.setBounds(5, 0, 120, 20);
-        add(mTitle);
+    /**
+     * 初始化目标应用选择和包名添加View
+     */
+    private void initActionTopArea() {
+        JPanel actionTopPanel = new JPanel();
+        actionTopPanel.setAlignmentX(LEFT_ALIGNMENT);
+        actionTopPanel.setLayout(new BoxLayout(actionTopPanel,BoxLayout.Y_AXIS));
+        actionTopPanel.add(Box.createVerticalGlue());
+        //第一行
+        actionTopPanel.add(Box.createVerticalStrut(5));
+        JPanel choosePkg = new JPanel();
+        choosePkg.setLayout(new BoxLayout(choosePkg,BoxLayout.X_AXIS));
+        choosePkg.add(paddingHolder);
+
+        choosePkg.add(ComponentsUtils.createLabel("目标APP包名:"));
+        choosePkg.add(paddingHolder);
         pkgComboBox = new JComboBox<>();
+        pkgComboBox.setFont(font);
         if(pkgList.size() != 0){
             for (String pkg : pkgList) {
                 pkgComboBox.addItem(pkg);
@@ -146,28 +150,61 @@ public class ActionChooseContainer extends Container implements IActionListenner
             pkgComboBox.setSelectedIndex(0);
         }
         pkgComboBox.addItemListener(new PkgClickedLsr());
-        pkgComboBox.setBounds(121, 0, 247, 25);
-        add(pkgComboBox);
+        choosePkg.add(pkgComboBox);
+        // 创建一个 水平方向胶状 的不可见组件，用于撑满水平方向剩余的空间（如果有多个该组件，则平分剩余空间）
+        choosePkg.add(Box.createHorizontalStrut(350));
+        actionTopPanel.add(choosePkg);
+        actionTopPanel.add(Box.createVerticalStrut(8));
 
-        addPkgBtn = new JButton("添加新包名:");
-        addPkgBtn.setFont(new Font("楷体", Font.BOLD, 14));
-        addPkgBtn.setBounds(5, 40, 120, 30);
+        //第二行
+        JPanel addNewPkgPanel = new JPanel();
+        BoxLayout boxLayout = new BoxLayout(addNewPkgPanel, BoxLayout.X_AXIS);
+        addNewPkgPanel.setLayout(boxLayout);
+        addNewPkgPanel.add(paddingHolder);
+        addPkgBtn = new JButton("添加新包名");
+        addPkgBtn.setFont(font);
         addPkgBtn.addActionListener(new AddPKGLsr());
-        add(addPkgBtn);
+        addNewPkgPanel.add(addPkgBtn);
+        addNewPkgPanel.add(paddingHolder);
 
         appenPkg = new JTextField("",12);
-        appenPkg.setHorizontalAlignment(10);
-        appenPkg.setFont(new Font("Helvetica", Font.PLAIN, 12));
-        appenPkg.setBounds(130, 40, 250, 30);
-        add(appenPkg);
+        //appenPkg.setHorizontalAlignment(10);
+        appenPkg.setFont(font);
+        addNewPkgPanel.add(appenPkg);
+        addNewPkgPanel.add(Box.createHorizontalStrut(350));
+        actionTopPanel.add(addNewPkgPanel);
+        actionTopPanel.add(Box.createVerticalStrut(8));
+
+        //第三行
+        JPanel startApp = new JPanel();
+        startApp.setLayout(new BoxLayout(startApp,BoxLayout.X_AXIS));
+        startApp.add(paddingHolder);
+        attachBtn(startApp,"Start：", ActionType.START_APP.value());
+        startApp.add(paddingHolder);
+
+        targetActivityFieldView = new JTextField();
+        targetActivityFieldView.setBounds(new Rectangle(ACTION_BTN_X + ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X,
+                        ACTION_BTN_OFFSET_Y,
+                        265,
+                        ACTION_BTN_HEIGHT));
+        targetActivityFieldView.setFont(font);
+        targetActivityFieldView.setText(splashPage);
+        //targetActivityFieldView.setMaximumSize(new Dimension(500,300));
+        startApp.add(targetActivityFieldView);
+        startApp.add(Box.createHorizontalStrut(350));
+        actionTopPanel.add(startApp);
+        actionTopPanel.add(Box.createVerticalStrut(8));
+        actionTopPanel.add(Box.createVerticalGlue());
+
+        add(actionTopPanel);
     }
 
-    private void attachBtn(String name, String cmd, Rectangle rect) {
+    private void attachBtn(JPanel panel,String name, String cmd) {
         JButton btn = new JButton(name);
         btn.setActionCommand(cmd);
-        btn.setBounds(rect);
+        btn.setFont(font);
         btn.addActionListener(new KActionListenner());
-        add(btn);
+        panel.add(btn);
         actionMap.put(cmd,btn);
     }
 
@@ -196,7 +233,7 @@ public class ActionChooseContainer extends Container implements IActionListenner
         }
         Tick(actionType, true);
         if(actionType == ActionType.START_APP){
-            ConfigManager.setConfigData(SPLASH_CONFIG_FILE,splashPageId.getText().trim(),false);
+            ConfigManager.setConfigData(SPLASH_CONFIG_FILE, targetActivityFieldView.getText().trim(),false);
         }
     }
 
@@ -218,7 +255,7 @@ public class ActionChooseContainer extends Container implements IActionListenner
                 onError(ActionType.EMPTY, "所选包名为空,请选择有效APP");
                 return;
             }
-            if(!_mainFrame.connectContainer.isCurrentDeviceConnected()){
+            if(!_mainFrame.connectPanel.isCurrentDeviceConnected()){
                 onError(ActionType.EMPTY, "请先连接设备!");
                 return;
             }
@@ -232,7 +269,7 @@ public class ActionChooseContainer extends Container implements IActionListenner
                 || actionType == ActionType.FORCE_STOP){
                 doAction(cmdMap.get(actionType) + appPkgname , actionType);
             }else if(actionType == ActionType.START_APP){
-                String pageId = splashPageId.getText();
+                String pageId = targetActivityFieldView.getText();
                 if(!pageId.trim().isEmpty()){
                     ConfigManager.setConfigData(SPLASH_CONFIG_FILE,pageId,false);
                 }

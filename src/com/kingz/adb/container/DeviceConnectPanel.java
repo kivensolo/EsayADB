@@ -6,6 +6,7 @@ import com.kingz.adb.config.ConfigManager;
 import com.kingz.adb.dm.IpModel;
 import com.kingz.adb.dm.ResponseFilter;
 import com.kingz.adb.inter_face.IActionListenner;
+import com.kingz.adb.widget.ComponentsUtils;
 import javafx.util.Pair;
 
 import javax.swing.*;
@@ -14,8 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,9 +39,8 @@ import java.util.regex.Pattern;
  * setFont(new Font("标楷体", Font.BOLD, 16));  //设置当前字体。
  * setTabSize(2);//使用setTabSize()方法设置[Tab]键的跳离距离
  */
-public class DeviceConnectContainer extends Container implements IActionListenner {
+public class DeviceConnectPanel extends JPanel implements IActionListenner {
     private DeviceChecker mDeviceChecker;
-    private JLabel mDeviceIp;
     private JLabel mStateInfo;
     private JMainFrame _mainFrame;
     private JComboBox<String> ipComboBox;
@@ -48,6 +48,7 @@ public class DeviceConnectContainer extends Container implements IActionListenne
     private JButton addIpBtn;
     private static List<Pair<String, Icon>> deviceState = new ArrayList<>();
     private static Map<String, JButton> actionMap = new HashMap<>();
+    private Font font = new Font("Helvetica", Font.PLAIN, 18);
 
     //--------- Ip 数据 ---------/
     private static List<IpModel> ipList = new ArrayList<>();
@@ -60,12 +61,12 @@ public class DeviceConnectContainer extends Container implements IActionListenne
         deviceState.add(new Pair<String, Icon>("未连接", new ImageIcon(JMainFrame.resLocalPath.concat("/Unlink.png"))));
     }
 
-    public DeviceConnectContainer(JMainFrame mainFrame) {
+    public DeviceConnectPanel(JMainFrame mainFrame) {
         //Dimension dimension = new Dimension(400, 100);
         //setPreferredSize(dimension);
         _mainFrame = mainFrame;
         FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
-        flowLayout.setVgap(10);
+        flowLayout.setHgap(10);
         setLayout(flowLayout);
 
         if(ConfigManager.getIpConfigData(ipList, IP_CONFIG_FILE)){
@@ -76,12 +77,10 @@ public class DeviceConnectContainer extends Container implements IActionListenne
                 System.out.println("初始化IP数据---无数据或失败");
             }
         }
-
-        mDeviceIp = new JLabel("请选择设备IP:");
-        mDeviceIp.setFont(new Font("楷体", Font.BOLD, 16));
-        add(mDeviceIp);
+        add(ComponentsUtils.createLabel("目标设备IP:"));
 
         ipComboBox = new JComboBox<>();
+        ipComboBox.setFont(font);
         if(ipList.size() != 0){
             for (IpModel ip : ipList) {
                 ipComboBox.addItem(ip.getIp());
@@ -96,12 +95,12 @@ public class DeviceConnectContainer extends Container implements IActionListenne
 
         mStateInfo = new JLabel("未连接", new ImageIcon(JMainFrame.resLocalPath.concat("/Unlink.png")), SwingConstants.CENTER);
         mStateInfo.setSize(200, 30);
-        mStateInfo.setFont(new Font("楷体", Font.BOLD, 12));
+        mStateInfo.setFont(font);
         add(mStateInfo);
 
         ipAddLabel = new JTextField("",12);
         ipAddLabel.setHorizontalAlignment(10);
-        ipAddLabel.setFont(new Font("Helvetica", Font.PLAIN,16));
+        ipAddLabel.setFont(font);
         add(ipAddLabel);
 
         addIpBtn = new JButton("添加");
@@ -174,11 +173,11 @@ public class DeviceConnectContainer extends Container implements IActionListenne
         if (actionType != ActionType.DEVICES) {
             printflnLog(info);
             if (actionType == ActionType.CONNECT) {
-                _mainFrame.connectContainer.setDisConnectEnable(true);
+                _mainFrame.connectPanel.setDisConnectEnable(true);
                 mDeviceChecker.update();
                 updateIpConfig();
             } else if (actionType == ActionType.DISCONNECT) {
-                _mainFrame.connectContainer.setConnectEnable(true);
+                _mainFrame.connectPanel.setConnectEnable(true);
                 mDeviceChecker.update();
             }
         } else {
