@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.awt.FlowLayout.LEFT;
+
 /**
  * author: King.Z <br>
  * date:  2017/11/29 16:18 <br>
@@ -30,7 +32,7 @@ import java.util.Map;
  * |                         |
  * |-------------------------+
  */
-public class ActionChoosePanel extends JPanel implements IActionListenner {
+public class ActionChoosePanel extends JInternalFrame implements IActionListenner {
     public static final int ACTION_BTN_X = 10;
     public static final int ACTION_BTN_WIDTH = 100;
     public static final int ACTION_BTN_HEIGHT = 30;
@@ -75,6 +77,7 @@ public class ActionChoosePanel extends JPanel implements IActionListenner {
     }
 
     public ActionChoosePanel(JFrame jFrame) {
+        setTitle("Files");
         TitledBorder titledBorder = BorderFactory.createTitledBorder("操作选项");
         titledBorder.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
@@ -114,7 +117,7 @@ public class ActionChoosePanel extends JPanel implements IActionListenner {
     private void initChooseBtn() {
         JPanel actionsPanel = new JPanel();
         FlowLayout layout = (FlowLayout) actionsPanel.getLayout();
-        layout.setAlignment(FlowLayout.LEFT);
+        layout.setAlignment(LEFT);
         actionsPanel.setAlignmentX(LEFT_ALIGNMENT);
         attachBtn(actionsPanel,"Clear", ActionType.CLEAR.value());
         attachBtn(actionsPanel,"Uninstall", ActionType.UNINSTALL.value());
@@ -129,6 +132,8 @@ public class ActionChoosePanel extends JPanel implements IActionListenner {
      * 初始化目标应用选择和包名添加View
      */
     private void initActionTopArea() {
+        getContentPane().setLayout(new FlowLayout(LEFT,5,5));
+
         JPanel actionTopPanel = new JPanel();
         actionTopPanel.setAlignmentX(LEFT_ALIGNMENT);
         actionTopPanel.setLayout(new BoxLayout(actionTopPanel,BoxLayout.Y_AXIS));

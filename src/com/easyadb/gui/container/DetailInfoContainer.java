@@ -5,9 +5,9 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
- * //TODO 增加菜单按钮  进行背景颜色的选择
+ * 日志输出框
  */
-public class DetailInfoContainer extends Container {
+public class DetailInfoContainer extends JInternalFrame {
     public static final int POS_X = 15;
     public static final int POS_Y = 300;
     private static final int DEFAULT_WIDTH = 300;
