@@ -24,11 +24,6 @@ import java.util.Map;
  * date:  2017/11/29 16:18 <br>
  * description: APK行为选择区域
  *
- * |-------------------------+
- * |BoxLayout                         |
- * |                         |
- * |                         |
- * |-------------------------+
  */
 public class ActionChooseFrame extends Panel implements IActionListenner {
     public static final int ACTION_BTN_X = 10;
@@ -81,16 +76,13 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
         //垂直方向上的Box,用于放置每个横向box
         Box vBox = Box.createVerticalBox();
 
-        //Border设置
+        //外包一层ScrollPane
         TitledBorder titledBorder = BorderFactory.createTitledBorder("操作选项");
         titledBorder.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
-
         JScrollPane jScrollPane = new JScrollPane(vBox);
         jScrollPane.setBorder(titledBorder);
         actionRootView.addLayoutComponent(jScrollPane,BorderLayout.CENTER);
-
-        //设置Box
         add(jScrollPane);
 
         initConfigData();
@@ -126,13 +118,7 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
     }
 
     private void initChooseBtn(Box vBox) {
-        Box hBox = Box.createHorizontalBox();
-        hBox.setAlignmentX(LEFT_ALIGNMENT);
-        attachBtn(hBox,"Clear", ActionType.CLEAR.value());
-        attachBtn(hBox,"Uninstall", ActionType.UNINSTALL.value());
-        attachBtn(hBox,"Stop", ActionType.FORCE_STOP.value());
-        attachBtn(hBox,"Comming...", ActionType.CATCH_SCREEN.value());
-        vBox.add(hBox);
+
     }
 
     /**
@@ -141,7 +127,8 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
     private void initActionsArea(Box vBox) {
         //第一行
         Box hBox01 = Box.createHorizontalBox();
-        hBox01.setAlignmentX(0f);
+        //hBox01.setAlignmentX(0f);
+        hBox01.add(paddingHolder);
         hBox01.add(ComponentsUtils.createLabel("目标APP包名:"));
         hBox01.add(paddingHolder);
         pkgComboBox = new JComboBox<>();
@@ -153,10 +140,11 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
             pkgComboBox.setSelectedIndex(0);
         }
         pkgComboBox.addItemListener(new PkgClickedLsr());
-        pkgComboBox.setPreferredSize(new Dimension(200,50));
+        //pkgComboBox.setPreferredSize(new Dimension(200,50));
         hBox01.add(pkgComboBox);
         // 创建一个 水平方向胶状 的不可见组件，用于撑满水平方向剩余的空间（如果有多个该组件，则平分剩余空间）
-        hBox01.add(Box.createHorizontalStrut(350));
+        hBox01.add(Box.createHorizontalStrut(50));
+        hBox01.add(Box.createHorizontalGlue());
 
         vBox.add(hBox01);
 
@@ -173,7 +161,8 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
         //appenPkg.setHorizontalAlignment(10);
         appenPkg.setFont(font);
         hBox02.add(appenPkg);
-        hBox02.add(Box.createHorizontalStrut(200));
+        hBox02.add(Box.createHorizontalStrut(50));
+        hBox02.add(Box.createHorizontalGlue());
         vBox.add(hBox02);
 
         ////第三行
@@ -191,11 +180,25 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
         targetActivityFieldView.setText(splashPage);
         //targetActivityFieldView.setMaximumSize(new Dimension(500,300));
         hBox03.add(targetActivityFieldView);
-        hBox03.add(Box.createHorizontalStrut(200));
+        hBox03.add(Box.createHorizontalStrut(50));
+        hBox03.add(Box.createHorizontalGlue());
 
         vBox.add(Box.createVerticalStrut(8));
         vBox.add(Box.createVerticalGlue());
         vBox.add(hBox03);
+
+
+        Box hBox04 = Box.createHorizontalBox();
+        //hBox.setAlignmentX(LEFT_ALIGNMENT);
+        hBox04.add(paddingHolder);
+        attachBtn(hBox04,"Clear", ActionType.CLEAR.value());
+        attachBtn(hBox04,"Uninstall", ActionType.UNINSTALL.value());
+        attachBtn(hBox04,"Stop", ActionType.FORCE_STOP.value());
+        attachBtn(hBox04,"Comming...", ActionType.CATCH_SCREEN.value());
+        hBox04.add(Box.createHorizontalGlue());
+        vBox.add(hBox04);
+
+        vBox.add(Box.createVerticalGlue());
     }
 
     private void attachBtn(Box box,String name, String cmd) {
