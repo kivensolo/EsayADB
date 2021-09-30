@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.awt.FlowLayout.LEFT;
-
 /**
  * author: King.Z <br>
  * date:  2017/11/29 16:18 <br>
@@ -32,7 +30,7 @@ import static java.awt.FlowLayout.LEFT;
  * |                         |
  * |-------------------------+
  */
-public class ActionChoosePanel extends JInternalFrame implements IActionListenner {
+public class ActionChooseFrame extends Panel implements IActionListenner {
     public static final int ACTION_BTN_X = 10;
     public static final int ACTION_BTN_WIDTH = 100;
     public static final int ACTION_BTN_HEIGHT = 30;
@@ -76,18 +74,31 @@ public class ActionChoosePanel extends JInternalFrame implements IActionListenne
         cmdMap.put(ActionType.DUMP_HEAP, "adb shell am dumpheap ");  //cmd： adb shell am dumpheap [PROCESS] [FILENAME]
     }
 
-    public ActionChoosePanel(JFrame jFrame) {
-        setTitle("Files");
+    public ActionChooseFrame(JFrame jFrame) {
+        _mainFrame = (MainViewerGUI) jFrame;
+        BorderLayout actionRootView = new BorderLayout();
+        setLayout(actionRootView);
+        //垂直方向上的Box,用于放置每个横向box
+        Box vBox = Box.createVerticalBox();
+
+        //Border设置
         TitledBorder titledBorder = BorderFactory.createTitledBorder("操作选项");
         titledBorder.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
-        setBorder(titledBorder);
-        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-        _mainFrame = (MainViewerGUI) jFrame;
-        //setBackground(Color.LIGHT_GRAY);
+
+        JScrollPane jScrollPane = new JScrollPane(vBox);
+        jScrollPane.setBorder(titledBorder);
+        actionRootView.addLayoutComponent(jScrollPane,BorderLayout.CENTER);
+
+        //设置Box
+        add(jScrollPane);
+
         initConfigData();
-        initActionTopArea();
-        initChooseBtn();
+        initActionsArea(vBox);
+        initChooseBtn(vBox);
+
+        //使用JInternalFrame就必须设置visible为true
+        //setVisible(true);
     }
 
     private void initConfigData() {
@@ -114,38 +125,25 @@ public class ActionChoosePanel extends JInternalFrame implements IActionListenne
 
     }
 
-    private void initChooseBtn() {
-        JPanel actionsPanel = new JPanel();
-        FlowLayout layout = (FlowLayout) actionsPanel.getLayout();
-        layout.setAlignment(LEFT);
-        actionsPanel.setAlignmentX(LEFT_ALIGNMENT);
-        attachBtn(actionsPanel,"Clear", ActionType.CLEAR.value());
-        attachBtn(actionsPanel,"Uninstall", ActionType.UNINSTALL.value());
-        attachBtn(actionsPanel,"Stop", ActionType.FORCE_STOP.value());
-        attachBtn(actionsPanel,"Comming...", ActionType.CATCH_SCREEN.value());
-        add(actionsPanel);
-
-
+    private void initChooseBtn(Box vBox) {
+        Box hBox = Box.createHorizontalBox();
+        hBox.setAlignmentX(LEFT_ALIGNMENT);
+        attachBtn(hBox,"Clear", ActionType.CLEAR.value());
+        attachBtn(hBox,"Uninstall", ActionType.UNINSTALL.value());
+        attachBtn(hBox,"Stop", ActionType.FORCE_STOP.value());
+        attachBtn(hBox,"Comming...", ActionType.CATCH_SCREEN.value());
+        vBox.add(hBox);
     }
 
     /**
      * 初始化目标应用选择和包名添加View
      */
-    private void initActionTopArea() {
-        getContentPane().setLayout(new FlowLayout(LEFT,5,5));
-
-        JPanel actionTopPanel = new JPanel();
-        actionTopPanel.setAlignmentX(LEFT_ALIGNMENT);
-        actionTopPanel.setLayout(new BoxLayout(actionTopPanel,BoxLayout.Y_AXIS));
-        actionTopPanel.add(Box.createVerticalGlue());
+    private void initActionsArea(Box vBox) {
         //第一行
-        actionTopPanel.add(Box.createVerticalStrut(5));
-        JPanel choosePkg = new JPanel();
-        choosePkg.setLayout(new BoxLayout(choosePkg,BoxLayout.X_AXIS));
-        choosePkg.add(paddingHolder);
-
-        choosePkg.add(ComponentsUtils.createLabel("目标APP包名:"));
-        choosePkg.add(paddingHolder);
+        Box hBox01 = Box.createHorizontalBox();
+        hBox01.setAlignmentX(0f);
+        hBox01.add(ComponentsUtils.createLabel("目标APP包名:"));
+        hBox01.add(paddingHolder);
         pkgComboBox = new JComboBox<>();
         pkgComboBox.setFont(font);
         if(pkgList.size() != 0){
@@ -155,37 +153,34 @@ public class ActionChoosePanel extends JInternalFrame implements IActionListenne
             pkgComboBox.setSelectedIndex(0);
         }
         pkgComboBox.addItemListener(new PkgClickedLsr());
-        choosePkg.add(pkgComboBox);
+        pkgComboBox.setPreferredSize(new Dimension(200,50));
+        hBox01.add(pkgComboBox);
         // 创建一个 水平方向胶状 的不可见组件，用于撑满水平方向剩余的空间（如果有多个该组件，则平分剩余空间）
-        choosePkg.add(Box.createHorizontalStrut(350));
-        actionTopPanel.add(choosePkg);
-        actionTopPanel.add(Box.createVerticalStrut(8));
+        hBox01.add(Box.createHorizontalStrut(350));
+
+        vBox.add(hBox01);
 
         //第二行
-        JPanel addNewPkgPanel = new JPanel();
-        BoxLayout boxLayout = new BoxLayout(addNewPkgPanel, BoxLayout.X_AXIS);
-        addNewPkgPanel.setLayout(boxLayout);
-        addNewPkgPanel.add(paddingHolder);
+        Box hBox02 = Box.createHorizontalBox();
+        hBox02.add(paddingHolder);
         addPkgBtn = new JButton("添加新包名");
         addPkgBtn.setFont(font);
         addPkgBtn.addActionListener(new AddPKGLsr());
-        addNewPkgPanel.add(addPkgBtn);
-        addNewPkgPanel.add(paddingHolder);
+        hBox02.add(addPkgBtn);
+        hBox02.add(paddingHolder);
 
         appenPkg = new JTextField("",12);
         //appenPkg.setHorizontalAlignment(10);
         appenPkg.setFont(font);
-        addNewPkgPanel.add(appenPkg);
-        addNewPkgPanel.add(Box.createHorizontalStrut(350));
-        actionTopPanel.add(addNewPkgPanel);
-        actionTopPanel.add(Box.createVerticalStrut(8));
+        hBox02.add(appenPkg);
+        hBox02.add(Box.createHorizontalStrut(200));
+        vBox.add(hBox02);
 
-        //第三行
-        JPanel startApp = new JPanel();
-        startApp.setLayout(new BoxLayout(startApp,BoxLayout.X_AXIS));
-        startApp.add(paddingHolder);
-        attachBtn(startApp,"Start：", ActionType.START_APP.value());
-        startApp.add(paddingHolder);
+        ////第三行
+        Box hBox03 = Box.createHorizontalBox();
+        hBox03.add(paddingHolder);
+        attachBtn(hBox03,"Start：", ActionType.START_APP.value());
+        hBox03.add(paddingHolder);
 
         targetActivityFieldView = new JTextField();
         targetActivityFieldView.setBounds(new Rectangle(ACTION_BTN_X + ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X,
@@ -195,21 +190,20 @@ public class ActionChoosePanel extends JInternalFrame implements IActionListenne
         targetActivityFieldView.setFont(font);
         targetActivityFieldView.setText(splashPage);
         //targetActivityFieldView.setMaximumSize(new Dimension(500,300));
-        startApp.add(targetActivityFieldView);
-        startApp.add(Box.createHorizontalStrut(350));
-        actionTopPanel.add(startApp);
-        actionTopPanel.add(Box.createVerticalStrut(8));
-        actionTopPanel.add(Box.createVerticalGlue());
+        hBox03.add(targetActivityFieldView);
+        hBox03.add(Box.createHorizontalStrut(200));
 
-        add(actionTopPanel);
+        vBox.add(Box.createVerticalStrut(8));
+        vBox.add(Box.createVerticalGlue());
+        vBox.add(hBox03);
     }
 
-    private void attachBtn(JPanel panel,String name, String cmd) {
+    private void attachBtn(Box box,String name, String cmd) {
         JButton btn = new JButton(name);
         btn.setActionCommand(cmd);
         btn.setFont(font);
         btn.addActionListener(new KActionListenner());
-        panel.add(btn);
+        box.add(btn);
         actionMap.put(cmd,btn);
     }
 
@@ -355,6 +349,7 @@ public class ActionChoosePanel extends JInternalFrame implements IActionListenne
     private void printf(String value) {
         _mainFrame.infoComponent.appenText(value);
     }
+
 
     private void Tick(ActionType actionType, boolean b) {
         if (actionMap != null && actionMap.size() != 0) {

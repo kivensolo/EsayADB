@@ -156,6 +156,7 @@ public class DeviceConnectPanel extends JPanel implements IActionListenner {
 
     @Override
     public void onStart(ActionType actionType) {
+        //TODO 应该可以用事件替换
         _mainFrame.infoComponent.clear();
         if (actionMap != null && actionMap.size() != 0) {
             if (actionType != ActionType.DEVICES) {

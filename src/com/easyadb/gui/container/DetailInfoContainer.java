@@ -3,11 +3,15 @@ package com.easyadb.gui.container;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 /**
  * 日志输出框
  */
-public class DetailInfoContainer extends JInternalFrame {
+public class DetailInfoContainer extends JPanel {
     public static final int POS_X = 15;
     public static final int POS_Y = 300;
     private static final int DEFAULT_WIDTH = 300;
@@ -17,14 +21,29 @@ public class DetailInfoContainer extends JInternalFrame {
     JPanel jLeftPanel;
     JTextArea jTextArea;
     //TODO 添加清除按钮
+    MouseWheelListener sysWheel;
 
     public DetailInfoContainer() {
         _width = DEFAULT_WIDTH;
         _height = DEFAULT_HEIGHT;
-        setLayout(new BorderLayout());
+        BorderLayout detailRootView = new BorderLayout();
+        setLayout(detailRootView);
+        JPanel root = new JPanel();
+        root.setLayout(new BorderLayout());
+        //Left
         jLeftPanel = new JPanel();
-        //JButton jButton = new JButton("清楚");
-        //jLeftPanel.add(JButton);
+        JButton clearBtn = new JButton("C");
+        clearBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("TODO 清理打印输出");
+            }
+        });
+        jLeftPanel.add(clearBtn);
+        TitledBorder borde = BorderFactory.createTitledBorder("");
+        jLeftPanel.setBorder(borde);
+        root.add(jLeftPanel,BorderLayout.WEST);
+
         jTextArea = new JTextArea(10, 15);
         jTextArea.setTabSize(4);
         //setFont(new Font("标楷体", Font.PLAIN, 14));
@@ -34,7 +53,37 @@ public class DetailInfoContainer extends JInternalFrame {
         jTextArea.setEnabled(false);
         jTextArea.setDisabledTextColor(Color.LIGHT_GRAY);
         jTextArea.setBackground(Color.decode("2829099"));
-        //jTextArea.addMouseListener(new MouseAdapter() {
+        JScrollPane jscrollPane = new JScrollPane(jTextArea);
+        //得到系统滚动事件
+        sysWheel = jscrollPane.getMouseWheelListeners()[0];
+        //移除系统滚动，需要时添加, 防止放大时滚动
+        jscrollPane.removeMouseWheelListener(sysWheel);
+        TitledBorder titledBorder = BorderFactory.createTitledBorder("Logcat");
+        titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
+        jscrollPane.setBorder(titledBorder);
+        jscrollPane.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                System.out.println("mouseWheelMoved =" + e.toString());
+                if (e.isControlDown()) {
+                    Font font = jTextArea.getFont();
+                    int rotation = e.getWheelRotation();
+                    Font newFont;
+                    if (rotation < 0) { //向上滚动 放大文字
+                        newFont = new Font(font.getFamily(), font.getStyle(), font.getSize() + 1);
+                    } else {
+                        //向下滚动，缩小文字
+                        newFont = new Font(font.getFamily(), font.getStyle(), font.getSize() - 1);
+                    }
+                    jTextArea.setFont(newFont);
+                } else {
+                    jscrollPane.addMouseWheelListener(sysWheel);
+                    sysWheel.mouseWheelMoved(e);//触发系统滚动事件。
+                    jscrollPane.removeMouseWheelListener(sysWheel);
+                }
+            }
+        });
+            //jTextArea.addMouseListener(new MouseAdapter() {
         //    public void mouseEntered(MouseEvent mouseEvent) {
         //        jTextArea.setCursor(new Cursor(Cursor.TEXT_CURSOR)); //鼠标进入Text区后变为文本输入指针
         //    }
@@ -49,18 +98,18 @@ public class DetailInfoContainer extends JInternalFrame {
         //    }
         //});
         //jTextArea.setVisible(true); //使Text区的文本光标显示
-        JScrollPane jscrollPane = new JScrollPane(jTextArea);
-        TitledBorder titledBorder = BorderFactory.createTitledBorder("Logcat");
-        titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
-        jscrollPane.setBorder(titledBorder);
-        add(jscrollPane);
+
+        JScrollPane jScrollPane = new JScrollPane(jscrollPane);
+        root.add(jScrollPane, BorderLayout.CENTER);
+        add(root,BorderLayout.CENTER);
+
     }
 
     public void appenText(String value) {
         if (jTextArea != null) {
-            if(jTextArea.getText() == null || jTextArea.getText().equals("")){
+            if (jTextArea.getText() == null || jTextArea.getText().equals("")) {
                 jTextArea.append("\n" + value);
-            }else{
+            } else {
                 jTextArea.append(value);
             }
         }

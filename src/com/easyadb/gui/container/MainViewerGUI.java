@@ -32,7 +32,7 @@ public class MainViewerGUI extends JFrame {
 
     DeviceConnectPanel connectPanel;
     DetailInfoContainer infoComponent;
-    ActionChoosePanel actionChooseContainer;
+    ActionChooseFrame actionChooseContainer;
     public static String rootPath = "";
     public static String resLocalPath = "";
     public static String cfgLocalPath = "";
@@ -54,28 +54,46 @@ public class MainViewerGUI extends JFrame {
         //Toolkit kit = Toolkit.getDefaultToolkit();
         initPath();
         initIconView();
-        setLayout(new BorderLayout());
+        setTitle("Easy ADB("+ EasyADB.VERSION +") - https://www.baidu.com  -  @ZekeWong ");
+        setSize(950, 600);
+        getContentPane().setLayout(new BorderLayout());
         addWindowListener(new CloseWindowAdapter());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        initConnectArea();
-        initActionChooseArea();
-        initLogPane();
-        //add("East", new JButton("设备连接列表区域"));
-        //add("West", new JButton("West Btn"));
-        initMsgView();
-        //初始化菜单
-        new MenuBar(this);
-        //调用框架组件的首选大小，或者我们可以用SetSize方法来替换它
-        //pack();
 
-        setTitle("Easy ADB("+ EasyADB.VERSION +") - https://www.baidu.com  -  @ZekeWong ");
+        initViews();
+
+        //调用框架组件的首选大小，或者可以用SetSize方法来替换它
+        pack();
         //setExtendedState(Frame.MAXIMIZED_BOTH);// 将窗口最大化
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(950, 600);
 
-        //getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         setVisible(true);
         setShowCenter();
+    }
+
+
+    private void initViews() {
+        connectPanel = new DeviceConnectPanel(this);
+        add(connectPanel, BorderLayout.NORTH);
+        actionChooseContainer = new ActionChooseFrame(this);
+        add(actionChooseContainer, BorderLayout.CENTER);
+
+        infoComponent = new DetailInfoContainer();
+        infoComponent.setSize(new Dimension(400, 200));
+        add(infoComponent, BorderLayout.SOUTH);
+
+        //分隔面板
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.VERTICAL_SPLIT,
+                actionChooseContainer,
+                infoComponent);
+        splitPane.setResizeWeight(0.5);
+        getContentPane().add(splitPane);
+
+        initMsgView();
+
+        //初始化菜单
+        new MenuBar(this);
     }
 
     private void initWindowListeners() {
@@ -102,21 +120,9 @@ public class MainViewerGUI extends JFrame {
         super.addWindowListener(l);
     }
 
-    private void initConnectArea() {
-        connectPanel = new DeviceConnectPanel(this);
-        add("North", connectPanel);
-    }
 
     private void initLogPane() {
-        infoComponent = new DetailInfoContainer();
-        Dimension dimension = new Dimension(400, 200);
-        infoComponent.setSize(dimension);
-        add("South", infoComponent);
-    }
 
-    private void initActionChooseArea() {
-        actionChooseContainer = new ActionChoosePanel(this);
-        add("Center", actionChooseContainer);
     }
 
 
