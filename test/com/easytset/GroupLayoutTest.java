@@ -2,9 +2,6 @@ package com.easytset;
 
 import javax.swing.*;
 
-/**
- * 必须同时指定垂直和水平才行
- */
 public class GroupLayoutTest {
 
 

@@ -25,12 +25,7 @@ import java.util.Map;
  * description: APK行为选择区域
  *
  */
-public class ActionChooseFrame extends Panel implements IActionListenner {
-    public static final int ACTION_BTN_X = 10;
-    public static final int ACTION_BTN_WIDTH = 100;
-    public static final int ACTION_BTN_HEIGHT = 30;
-    public static final int ACTION_BTN_OFFSET_Y = 80;
-    public static final int ACTION_BTN_OFFSET_X = 5;
+public class ActionChooseJpanel extends JPanel implements IActionListenner {
     public static final int TEXT_SIZE = 18;
     Font font = new Font("Helvetica", Font.PLAIN, TEXT_SIZE);
 
@@ -41,8 +36,8 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
     private String splashPage = "";
     private MainViewerGUI _mainFrame;
     private JComboBox<String> pkgComboBox;
-    public static final String PKG_CONFIG_FILE = "\\packages.txt";
-    public static final String SPLASH_CONFIG_FILE = "\\startPage.txt";
+    private static final String PKG_CONFIG_FILE = "\\packages.txt";
+    private static final String SPLASH_CONFIG_FILE = "\\startPage.txt";
 
     private static List<String> pkgList = new ArrayList<>();
     private static List<String> splashPageList = new ArrayList<>();
@@ -69,27 +64,14 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
         cmdMap.put(ActionType.DUMP_HEAP, "adb shell am dumpheap ");  //cmd： adb shell am dumpheap [PROCESS] [FILENAME]
     }
 
-    public ActionChooseFrame(JFrame jFrame) {
+    public ActionChooseJpanel(JFrame jFrame) {
         _mainFrame = (MainViewerGUI) jFrame;
-        BorderLayout actionRootView = new BorderLayout();
-        setLayout(actionRootView);
-        //垂直方向上的Box,用于放置每个横向box
-        Box vBox = Box.createVerticalBox();
-
-        //外包一层ScrollPane
-        TitledBorder titledBorder = BorderFactory.createTitledBorder("操作选项");
-        titledBorder.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
-        JScrollPane jScrollPane = new JScrollPane(vBox);
-        jScrollPane.setBorder(titledBorder);
-        actionRootView.addLayoutComponent(jScrollPane,BorderLayout.CENTER);
-        add(jScrollPane);
+        setLayout(new BorderLayout());
 
         initConfigData();
-        initActionsArea(vBox);
-        initChooseBtn(vBox);
+        initActionsArea();
 
-        //使用JInternalFrame就必须设置visible为true
+        //使用JInternalFrame时就必须设置visible为true
         //setVisible(true);
     }
 
@@ -117,20 +99,29 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
 
     }
 
-    private void initChooseBtn(Box vBox) {
-
-    }
 
     /**
      * 初始化目标应用选择和包名添加View
      */
-    private void initActionsArea(Box vBox) {
+    private void initActionsArea() {
+        ////JScrollPane jScrollPane = new JScrollPane(actionPanel);
+        //actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));
+        //add(actionPanel);
+
+        Box vtemp = Box.createVerticalBox();
+        JPanel actionPanel = new JPanel();
+        //actionPanel.setBackground(Color.ORANGE);
+
+        TitledBorder titledBorder = BorderFactory.createTitledBorder("操作选项");
+        titledBorder.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        titledBorder.setTitleFont(new Font("Helvetica", Font.PLAIN, 14));
+        actionPanel.setBorder(titledBorder);
+        actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.X_AXIS));
+
         //第一行
         Box hBox01 = Box.createHorizontalBox();
-        //hBox01.setAlignmentX(0f);
-        hBox01.add(paddingHolder);
         hBox01.add(ComponentsUtils.createLabel("目标APP包名:"));
-        hBox01.add(paddingHolder);
+        hBox01.add(Box.createHorizontalStrut(5));
         pkgComboBox = new JComboBox<>();
         pkgComboBox.setFont(font);
         if(pkgList.size() != 0){
@@ -140,13 +131,12 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
             pkgComboBox.setSelectedIndex(0);
         }
         pkgComboBox.addItemListener(new PkgClickedLsr());
-        //pkgComboBox.setPreferredSize(new Dimension(200,50));
+        pkgComboBox.setMaximumSize(new Dimension(200,40));
         hBox01.add(pkgComboBox);
         // 创建一个 水平方向胶状 的不可见组件，用于撑满水平方向剩余的空间（如果有多个该组件，则平分剩余空间）
-        hBox01.add(Box.createHorizontalStrut(50));
         hBox01.add(Box.createHorizontalGlue());
-
-        vBox.add(hBox01);
+        vtemp.add(hBox01);
+        vtemp.add(Box.createVerticalStrut(5));
 
         //第二行
         Box hBox02 = Box.createHorizontalBox();
@@ -158,47 +148,44 @@ public class ActionChooseFrame extends Panel implements IActionListenner {
         hBox02.add(paddingHolder);
 
         appenPkg = new JTextField("",12);
-        //appenPkg.setHorizontalAlignment(10);
+        appenPkg.setPreferredSize(new Dimension(550,40));
+        appenPkg.setMaximumSize(new Dimension(550,40));
         appenPkg.setFont(font);
+
         hBox02.add(appenPkg);
-        hBox02.add(Box.createHorizontalStrut(50));
         hBox02.add(Box.createHorizontalGlue());
-        vBox.add(hBox02);
+        vtemp.add(hBox02);
+        vtemp.add(Box.createVerticalStrut(5));
 
         ////第三行
         Box hBox03 = Box.createHorizontalBox();
         hBox03.add(paddingHolder);
-        attachBtn(hBox03,"Start：", ActionType.START_APP.value());
+        attachBtn(hBox03,"Open:", ActionType.START_APP.value());
         hBox03.add(paddingHolder);
-
         targetActivityFieldView = new JTextField();
-        targetActivityFieldView.setBounds(new Rectangle(ACTION_BTN_X + ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X,
-                        ACTION_BTN_OFFSET_Y,
-                        265,
-                        ACTION_BTN_HEIGHT));
+        //targetActivityFieldView.setBounds(new Rectangle(ACTION_BTN_X + ACTION_BTN_WIDTH + ACTION_BTN_OFFSET_X,
+        //                ACTION_BTN_OFFSET_Y,
+        //                350,
+        //                ACTION_BTN_HEIGHT));
         targetActivityFieldView.setFont(font);
         targetActivityFieldView.setText(splashPage);
-        //targetActivityFieldView.setMaximumSize(new Dimension(500,300));
+        targetActivityFieldView.setPreferredSize(new Dimension(450,40));
+        targetActivityFieldView.setMaximumSize(new Dimension(1000,40));
         hBox03.add(targetActivityFieldView);
-        hBox03.add(Box.createHorizontalStrut(50));
         hBox03.add(Box.createHorizontalGlue());
-
-        vBox.add(Box.createVerticalStrut(8));
-        vBox.add(Box.createVerticalGlue());
-        vBox.add(hBox03);
-
+        vtemp.add(hBox03);
+        vtemp.add(Box.createVerticalStrut(5));
 
         Box hBox04 = Box.createHorizontalBox();
-        //hBox.setAlignmentX(LEFT_ALIGNMENT);
-        hBox04.add(paddingHolder);
         attachBtn(hBox04,"Clear", ActionType.CLEAR.value());
         attachBtn(hBox04,"Uninstall", ActionType.UNINSTALL.value());
         attachBtn(hBox04,"Stop", ActionType.FORCE_STOP.value());
         attachBtn(hBox04,"Comming...", ActionType.CATCH_SCREEN.value());
         hBox04.add(Box.createHorizontalGlue());
-        vBox.add(hBox04);
-
-        vBox.add(Box.createVerticalGlue());
+        vtemp.add(hBox04);
+        vtemp.add(Box.createVerticalGlue());
+        actionPanel.add(vtemp);
+        this.add(actionPanel);
     }
 
     private void attachBtn(Box box,String name, String cmd) {

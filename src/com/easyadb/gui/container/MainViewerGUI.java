@@ -32,7 +32,7 @@ public class MainViewerGUI extends JFrame {
 
     DeviceConnectPanel connectPanel;
     DetailInfoContainer infoComponent;
-    ActionChooseFrame actionChooseContainer;
+    ActionChooseJpanel actionChooseContainer;
     public static String rootPath = "";
     public static String resLocalPath = "";
     public static String cfgLocalPath = "";
@@ -42,6 +42,7 @@ public class MainViewerGUI extends JFrame {
      */
     public boolean isMaximized = false;
 
+    @Deprecated
     private void setShowCenter() {
         Dimension frameSize = getSize();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -54,7 +55,7 @@ public class MainViewerGUI extends JFrame {
         //Toolkit kit = Toolkit.getDefaultToolkit();
         initPath();
         initIconView();
-        setTitle("Easy ADB("+ EasyADB.VERSION +") - https://www.baidu.com  -  @ZekeWong ");
+        setTitle("Easy ADB("+ EasyADB.VERSION +") - https://github.com/kivensolo/EsayADB  -  @ZekeWong ");
         setSize(950, 600);
         getContentPane().setLayout(new BorderLayout());
         addWindowListener(new CloseWindowAdapter());
@@ -64,18 +65,18 @@ public class MainViewerGUI extends JFrame {
 
         //调用框架组件的首选大小，或者可以用SetSize方法来替换它
         pack();
+        //窗口将被放置在屏幕的中央
+        setLocationRelativeTo(null);
         //setExtendedState(Frame.MAXIMIZED_BOTH);// 将窗口最大化
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
         setVisible(true);
-        setShowCenter();
     }
 
 
     private void initViews() {
         connectPanel = new DeviceConnectPanel(this);
         add(connectPanel, BorderLayout.NORTH);
-        actionChooseContainer = new ActionChooseFrame(this);
+        actionChooseContainer = new ActionChooseJpanel(this);
         add(actionChooseContainer, BorderLayout.CENTER);
 
         infoComponent = new DetailInfoContainer();
