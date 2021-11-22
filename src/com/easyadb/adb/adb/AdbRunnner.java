@@ -19,6 +19,7 @@ public class AdbRunnner {
             String[] cmd = new String[]{"cmd.exe", "/C",adbCmd};
             Process process = Runtime.getRuntime().exec(cmd);
             InputStream ins = process.getInputStream();// 获取执行cmd命令后的信息
+            InputStream es = process.getErrorStream(); // 错误信息
             BufferedReader reader = new BufferedReader(new InputStreamReader(ins));
             String line;
             StringBuilder sb = new StringBuilder();

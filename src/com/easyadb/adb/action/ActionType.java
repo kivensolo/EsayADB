@@ -13,6 +13,7 @@ public enum ActionType {
     CONNECT("connect"),
     DISCONNECT("disconnect"),
     CLEAR("clear"),
+    INSTALL("install"),
     UNINSTALL("uninstall"),
     FORCE_STOP("stop"),
     DEVICES("show devices"),

@@ -5,3 +5,4 @@ com.bestv.iptv.app
 com.starcor.hunan
 com.kingz.customdemo
 com.starcor.xinjiang.hy
+com.starcor.hbgd.launcher

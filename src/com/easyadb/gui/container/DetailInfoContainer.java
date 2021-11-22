@@ -64,7 +64,7 @@ public class DetailInfoContainer extends JPanel {
         jscrollPane.addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                System.out.println("mouseWheelMoved =" + e.toString());
+//                System.out.println("mouseWheelMoved =" + e.toString());
                 if (e.isControlDown()) {
                     Font font = jTextArea.getFont();
                     int rotation = e.getWheelRotation();

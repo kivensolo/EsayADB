@@ -1,7 +1,7 @@
 package com.easyadb.gui.container;
 
 import com.easyadb.adb.action.ActionType;
-import com.easyadb.adb.adb.AdbRunnner;
+import com.easyadb.adb.adb.AdbCommandUtil;
 import com.easyadb.adb.config.ConfigManager;
 import com.easyadb.adb.inter_face.IActionListenner;
 import com.easyadb.gui.widget.ComponentsUtils;
@@ -25,7 +25,7 @@ import java.util.Map;
  * description: APK行为选择区域
  *
  */
-public class ActionChooseJpanel extends JPanel implements IActionListenner {
+public class ActionChooseJpanel extends JPanel implements IActionListenner, ApkDragWindow.IApkChooser {
     public static final int TEXT_SIZE = 18;
     Font font = new Font("Helvetica", Font.PLAIN, TEXT_SIZE);
 
@@ -44,6 +44,8 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
     private static Map<ActionType, String> cmdMap = new HashMap<>();
     private static Map<String, JButton> actionMap = new HashMap<>();
 
+    private static final String CMD_QUERY_TMP_INSTALL_APK_PREFIX = "adb shell ls -l /data/local/tmp/";
+
 
     private Component paddingHolder = Box.createHorizontalStrut(5);
 
@@ -56,6 +58,7 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
 
     static {
         cmdMap.put(ActionType.CLEAR, "adb shell pm clear ");
+        cmdMap.put(ActionType.INSTALL, "adb install -r");
         cmdMap.put(ActionType.UNINSTALL, "adb uninstall ");
         cmdMap.put(ActionType.FORCE_STOP, "adb shell am force-stop ");
         cmdMap.put(ActionType.START_APP, "adb shell am start ");
@@ -178,6 +181,7 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
 
         Box hBox04 = Box.createHorizontalBox();
         attachBtn(hBox04,"Clear", ActionType.CLEAR.value());
+        attachBtn(hBox04,"Install", ActionType.INSTALL.value());
         attachBtn(hBox04,"Uninstall", ActionType.UNINSTALL.value());
         attachBtn(hBox04,"Stop", ActionType.FORCE_STOP.value());
         attachBtn(hBox04,"Comming...", ActionType.CATCH_SCREEN.value());
@@ -237,6 +241,17 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
         Tick(actionType, true);
     }
 
+    @Override
+    public void onApkChosen(String apkFilePath) {
+        System.out.println("install target apk file: " + apkFilePath);
+        if (null == apkFilePath || apkFilePath.isEmpty()) {
+            Tick(ActionType.INSTALL, true);
+            return;
+        }
+        ActionType actionType = ActionType.INSTALL;
+        doAction(cmdMap.get(actionType) + " " + apkFilePath , actionType);
+    }
+
     class KActionListenner implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -244,14 +259,16 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
                 onError(ActionType.EMPTY, "所选包名为空,请选择有效APP");
                 return;
             }
+            String command = e.getActionCommand();
+            final ActionType actionType = ActionType.fromString(command);
             if(!_mainFrame.connectPanel.isCurrentDeviceConnected()){
                 onError(ActionType.EMPTY, "请先连接设备!");
                 return;
             }
-            String command = e.getActionCommand();
-            final ActionType actionType = ActionType.fromString(command);
             onStart(actionType);
-            if(actionType == ActionType.CONNECT
+            if (actionType == ActionType.INSTALL) {
+                alertInstallWindow();
+            }else if(actionType == ActionType.CONNECT
                 || actionType == ActionType.DISCONNECT
                 || actionType == ActionType.CLEAR
                 || actionType == ActionType.UNINSTALL
@@ -267,6 +284,10 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
                 doAction(cmdMap.get(actionType) + appPkgname + "/data/anr/" + "33.hprof" , actionType);
             }
         }
+    }
+
+    private void alertInstallWindow() {
+        ApkDragWindow.open(this);
     }
 
     protected class PkgClickedLsr implements ItemListener {
@@ -317,8 +338,14 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String result = AdbRunnner.start(cmd);
-                onSuccess(actionType, result);
+//                String result = AdbRunnner.start(cmd);
+//                onSuccess(actionType, result);
+                new AdbCommandUtil(new AdbCommandUtil.ICommandExecutor() {
+                    @Override
+                    public void onResult(String result) {
+                        onSuccess(actionType, result);
+                    }
+                }).execute(cmd);
                 //if (MainViewerGUI.ERROR_KEYS.contains(result) && !"".equals(result)) {
                 //    onError(actionType,result);
                 //} else {
@@ -326,6 +353,18 @@ public class ActionChooseJpanel extends JPanel implements IActionListenner {
                 //}
             }
         }).start();
+        if (ActionType.INSTALL.equals(actionType)) {
+            // todo 获取安装进度
+            // 先启动 adb push 进程，然后每隔 0.5 秒钟调用一次 adb shell ls -l /data/local/tmp/_tmp.apk
+            // 获取到已经推送的文件的大小，再对比文件本身的大小，就可以知道进度了。
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            }).start();
+        }
+
     }
 
     private boolean isPkgNameEmpty() {
