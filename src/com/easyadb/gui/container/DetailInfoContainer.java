@@ -36,7 +36,7 @@ public class DetailInfoContainer extends JPanel {
         clearBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("TODO 清理打印输出");
+                jTextArea.setText("");
             }
         });
         jLeftPanel.add(clearBtn);
